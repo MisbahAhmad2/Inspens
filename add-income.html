@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inspens - Add Income</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #2a52be; /* Royal blue */
+      --primary-dark: #1a3a8f;
+      --primary-light: #7b9de1;
+      --accent-color: #ffc107; /* Gold accent */
+      --text-dark: #0a0a0a;
+      --text-medium: #4a4a4a;
+      --text-light: #e0e0e0;
+      --background: #121212;
+      --card-bg: #1e1e1e;
+      --white: #ffffff;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3);
+      --shadow-lg: 0 10px 20px rgba(0,0,0,0.5), 0 6px 6px rgba(0,0,0,0.4);
+      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      --success-color: #4caf50;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--background);
+      color: var(--text-light);
+      line-height: 1.6;
+      background: linear-gradient(135deg, #0a0a1a 0%, #12122b 100%);
+    }
+
+    /* Navbar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--card-bg);
+      padding: 15px 5%;
+      box-shadow: var(--shadow-sm);
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+      transition: var(--transition);
+    }
+
+    .navbar.scrolled {
+      padding: 10px 5%;
+      box-shadow: var(--shadow-md);
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      text-shadow: 0 0 10px rgba(42, 82, 190, 0.7);
+    }
+
+    .logo span {
+      display: inline-block;
+      transition: var(--transition);
+    }
+
+    .logo:hover span {
+      transform: translateY(-3px);
+      text-shadow: 0 0 15px rgba(42, 82, 190, 1);
+    }
+
+    .logo-icon {
+      margin-right: 8px;
+      font-size: 26px;
+      color: var(--accent-color);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .profile-dropdown {
+      position: relative;
+    }
+
+    .profile-btn {
+      background: none;
+      border: none;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .profile-btn:hover {
+      color: var(--accent-color);
+    }
+
+    .profile-img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--primary-light);
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      right: 0;
+      top: 50px;
+      background-color: var(--card-bg);
+      border-radius: 5px;
+      box-shadow: var(--shadow-md);
+      width: 200px;
+      overflow: hidden;
+      transform: translateY(10px);
+      opacity: 0;
+      visibility: hidden;
+      transition: var(--transition);
+      z-index: 1000;
+    }
+
+    .profile-dropdown:hover .dropdown-menu {
+      transform: translateY(0);
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .dropdown-item {
+      padding: 12px 15px;
+      color: var(--text-light);
+      text-decoration: none;
+      display: block;
+      transition: var(--transition);
+    }
+
+    .dropdown-item:hover {
+      background-color: rgba(42, 82, 190, 0.2);
+      color: var(--accent-color);
+    }
+
+    .dropdown-divider {
+      height: 1px;
+      background-color: rgba(255, 255, 255, 0.1);
+      margin: 5px 0;
+    }
+
+    .logout-btn {
+      color: #f44336 !important;
+    }
+
+    /* Main Content */
+    .add-income-container {
+      padding: 100px 5% 50px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      color: var(--white);
+      position: relative;
+    }
+
+    .page-title::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: var(--accent-color);
+      border-radius: 2px;
+    }
+
+    .back-btn {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--white);
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .back-btn:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    /* Form Styles */
+    .income-form {
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 15px;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
+      color: var(--white);
+      font-family: 'Montserrat', sans-serif;
+      transition: var(--transition);
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 2px rgba(42, 82, 190, 0.3);
+    }
+
+    .select-control {
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e0e0e0'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 15px center;
+      background-size: 15px;
+    }
+
+    .form-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      margin-top: 30px;
+    }
+
+    .submit-btn {
+      padding: 12px 25px;
+      font-size: 1rem;
+      font-weight: 600;
+      background-color: var(--primary-color);
+      color: var(--white);
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .submit-btn:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(42, 82, 190, 0.5);
+    }
+
+    .reset-btn {
+      padding: 12px 25px;
+      font-size: 1rem;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--white);
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .reset-btn:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    /* Form Validation */
+    .error-message {
+      color: #f44336;
+      font-size: 0.8rem;
+      margin-top: 5px;
+      display: none;
+    }
+
+    .form-group.error .error-message {
+      display: block;
+    }
+
+    .form-group.error .form-control {
+      border-color: #f44336;
+    }
+
+    .form-group.success .form-control {
+      border-color: var(--success-color);
+    }
+
+    /* Success Message */
+    .success-message {
+      background-color: rgba(76, 175, 80, 0.2);
+      color: var(--success-color);
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Footer */
+    .footer {
+      background-color: var(--card-bg);
+      color: var(--white);
+      padding: 30px 5%;
+      text-align: center;
+      margin-top: 50px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .footer-link {
+      color: var(--text-light);
+      text-decoration: none;
+      transition: var(--transition);
+      font-size: 0.9rem;
+    }
+
+    .footer-link:hover {
+      color: var(--accent-color);
+    }
+
+    .copyright {
+      color: var(--text-light);
+      font-size: 0.8rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .add-income-container {
+        padding: 90px 5% 40px;
+      }
+      
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+      }
+      
+      .income-form {
+        padding: 25px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .navbar {
+        padding: 15px 20px;
+      }
+      
+      .profile-btn span {
+        display: none;
+      }
+      
+      .page-title {
+        font-size: 1.8rem;
+      }
+      
+      .form-footer {
+        flex-direction: column;
+      }
+      
+      .submit-btn, .reset-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="logo">
+      <span class="logo-icon">💰</span>
+      <span>Inspens</span>
+    </div>
+    <div class="nav-right">
+      <div class="profile-dropdown">
+        <button class="profile-btn">
+          <img src="https://tse1.mm.bing.net/th?id=OIP.962LUqJ0mS6poVTnmkBKXAHaHa&pid=Api" alt="Profile" class="profile-img">
+          <span>Misbah Ahmad</span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="dropdown-menu">
+          <a href="profile.html" class="dropdown-item">
+            <i class="fas fa-user"></i> My Profile
+          </a>
+          <div class="dropdown-divider"></div>
+          <a href="logout.html" class="dropdown-item logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="add-income-container">
+    <div class="page-header">
+      <h1 class="page-title">Add Income</h1>
+      <button class="back-btn" onclick="window.location.href='dashboard.html'">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+      </button>
+    </div>
+
+    <!-- Success Message (Hidden by default) -->
+    <div class="success-message" id="successMessage">
+      <i class="fas fa-check-circle"></i>
+      <span>Income record added successfully!</span>
+    </div>
+
+    <form class="income-form" id="incomeForm">
+      <div class="form-group">
+        <label for="amount">Amount (PKR)</label>
+        <input type="number" id="amount" class="form-control" placeholder="Enter amount" required>
+        <span class="error-message">Please enter a valid amount</span>
+      </div>
+      
+      <div class="form-group">
+        <label for="source">Income Source</label>
+        <select id="source" class="form-control select-control" required>
+          <option value="" disabled selected>Select source</option>
+          <option value="salary">Salary</option>
+          <option value="freelance">Freelance Work</option>
+          <option value="investment">Investments</option>
+          <option value="business">Business</option>
+          <option value="gift">Gift</option>
+          <option value="other">Other</option>
+        </select>
+        <span class="error-message">Please select an income source</span>
+      </div>
+      
+      <div class="form-group">
+        <label for="date">Date</label>
+        <input type="date" id="date" class="form-control" required>
+        <span class="error-message">Please select a date</span>
+      </div>
+      
+      <div class="form-group">
+        <label for="notes">Notes (Optional)</label>
+        <textarea id="notes" class="form-control" rows="3" placeholder="Add any additional notes"></textarea>
+      </div>
+      
+      <div class="form-footer">
+        <button type="reset" class="reset-btn">Reset</button>
+        <button type="submit" class="submit-btn">
+          <i class="fas fa-save"></i> Save Income
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-links">
+      <a href="about.html" class="footer-link">About</a>
+      <a href="privacy.html" class="footer-link">Privacy Policy</a>
+      <a href="terms.html" class="footer-link">Terms of Service</a>
+      <a href="help.html" class="footer-link">Contact Us</a>
+    </div>
+    <p class="copyright">© 2023 Inspens. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Form Validation and Submission
+    const incomeForm = document.getElementById('incomeForm');
+    const successMessage = document.getElementById('successMessage');
+    
+    // Set default date to today
+    document.getElementById('date').valueAsDate = new Date();
+    
+    incomeForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Reset error states
+      document.querySelectorAll('.form-group').forEach(group => {
+        group.classList.remove('error', 'success');
+      });
+      
+      let isValid = true;
+      
+      // Validate amount
+      const amountInput = document.getElementById('amount');
+      if (!amountInput.value || isNaN(amountInput.value) || parseFloat(amountInput.value) <= 0) {
+        amountInput.parentElement.classList.add('error');
+        isValid = false;
+      } else {
+        amountInput.parentElement.classList.add('success');
+      }
+      
+      // Validate source
+      const sourceInput = document.getElementById('source');
+      if (!sourceInput.value) {
+        sourceInput.parentElement.classList.add('error');
+        isValid = false;
+      } else {
+        sourceInput.parentElement.classList.add('success');
+      }
+      
+      // Validate date
+      const dateInput = document.getElementById('date');
+      if (!dateInput.value) {
+        dateInput.parentElement.classList.add('error');
+        isValid = false;
+      } else {
+        dateInput.parentElement.classList.add('success');
+      }
+      
+      // If form is valid, proceed with submission
+      if (isValid) {
+        // Create income data object
+        const incomeData = {
+          amount: parseFloat(amountInput.value),
+          currency: 'PKR',
+          source: sourceInput.value,
+          date: dateInput.value,
+          notes: document.getElementById('notes').value
+        };
+        
+        // Store income data in localStorage
+        let incomes = JSON.parse(localStorage.getItem('incomes')) || [];
+        incomes.push(incomeData);
+        localStorage.setItem('incomes', JSON.stringify(incomes));
+        
+        console.log('Income data saved:', incomeData);
+        
+        // Show success message
+        successMessage.style.display = 'flex';
+        
+        // Hide form and show success for demo purposes
+        setTimeout(() => {
+          incomeForm.reset();
+          successMessage.style.display = 'none';
+          
+          // Redirect to dashboard after successful submission
+          window.location.href = 'dashboard.html';
+        }, 1500);
+      }
+    });
+    
+    // Navbar scroll effect
+    window.addEventListener('scroll', function() {
+      const navbar = document.querySelector('.navbar');
+      if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    });
+  </script>
+</body>
+</html>
+

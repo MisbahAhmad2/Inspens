@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inspens - User Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #2a52be; /* Royal blue */
+      --primary-dark: #1a3a8f;
+      --primary-light: #7b9de1;
+      --accent-color: #ffc107; /* Gold accent */
+      --text-dark: #0a0a0a;
+      --text-medium: #4a4a4a;
+      --text-light: #e0e0e0;
+      --background: #121212;
+      --card-bg: #1e1e1e;
+      --white: #ffffff;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3);
+      --shadow-lg: 0 10px 20px rgba(0,0,0,0.5), 0 6px 6px rgba(0,0,0,0.4);
+      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--background);
+      color: var(--text-light);
+      line-height: 1.6;
+    }
+
+    /* Navbar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--card-bg);
+      padding: 15px 5%;
+      box-shadow: var(--shadow-sm);
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+      transition: var(--transition);
+    }
+
+    .navbar.scrolled {
+      padding: 10px 5%;
+      box-shadow: var(--shadow-md);
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      text-shadow: 0 0 10px rgba(42, 82, 190, 0.7);
+    }
+
+    .logo span {
+      display: inline-block;
+      transition: var(--transition);
+    }
+
+    .logo:hover span {
+      transform: translateY(-3px);
+      text-shadow: 0 0 15px rgba(42, 82, 190, 1);
+    }
+
+    .logo-icon {
+      margin-right: 8px;
+      font-size: 26px;
+      color: var(--accent-color);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .profile-dropdown {
+      position: relative;
+    }
+
+    .profile-btn {
+      background: none;
+      border: none;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .profile-btn:hover {
+      color: var(--accent-color);
+    }
+
+    .profile-img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--primary-light);
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      right: 0;
+      top: 50px;
+      background-color: var(--card-bg);
+      border-radius: 5px;
+      box-shadow: var(--shadow-md);
+      width: 200px;
+      overflow: hidden;
+      transform: translateY(10px);
+      opacity: 0;
+      visibility: hidden;
+      transition: var(--transition);
+      z-index: 1000;
+    }
+
+    .profile-dropdown:hover .dropdown-menu {
+      transform: translateY(0);
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .dropdown-item {
+      padding: 12px 15px;
+      color: var(--text-light);
+      text-decoration: none;
+      display: block;
+      transition: var(--transition);
+    }
+
+    .dropdown-item:hover {
+      background-color: rgba(42, 82, 190, 0.2);
+      color: var(--accent-color);
+    }
+
+    .dropdown-divider {
+      height: 1px;
+      background-color: rgba(255, 255, 255, 0.1);
+      margin: 5px 0;
+    }
+
+    .logout-btn {
+      color: #f44336 !important;
+    }
+
+    /* Main Content */
+    .dashboard-container {
+      padding: 100px 5% 50px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .dashboard-title {
+      font-size: 2rem;
+      color: var(--white);
+      position: relative;
+    }
+
+    .dashboard-title::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: var(--accent-color);
+      border-radius: 2px;
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 15px;
+    }
+
+    .action-btn {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .primary-btn {
+      background-color: var(--primary-color);
+      color: var(--white);
+    }
+
+    .primary-btn:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(42, 82, 190, 0.5);
+    }
+
+    .secondary-btn {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--white);
+    }
+
+    .secondary-btn:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 5px;
+      height: 100%;
+      background: var(--primary-color);
+      transition: var(--transition);
+    }
+
+    .stat-card:hover::before {
+      background: var(--accent-color);
+    }
+
+    .stat-title {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .income-stat .stat-value {
+      color: #4caf50;
+    }
+
+    .expense-stat .stat-value {
+      color: #f44336;
+    }
+
+    .balance-stat .stat-value {
+      color: var(--accent-color);
+    }
+
+    /* Recent Transactions */
+    .section-title {
+      font-size: 1.5rem;
+      color: var(--white);
+      margin-bottom: 20px;
+      position: relative;
+      display: inline-block;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 40px;
+      height: 2px;
+      background: var(--accent-color);
+      border-radius: 2px;
+    }
+
+    .transactions-table {
+      width: 100%;
+      background: var(--card-bg);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 40px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 15px;
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--primary-dark);
+      color: var(--white);
+      font-weight: 500;
+    }
+
+    tr:nth-child(even) {
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    tr:hover {
+      background-color: rgba(42, 82, 190, 0.1);
+    }
+
+    .transaction-type {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .income-type {
+      background-color: rgba(76, 175, 80, 0.2);
+      color: #4caf50;
+    }
+
+    .expense-type {
+      background-color: rgba(244, 67, 54, 0.2);
+      color: #f44336;
+    }
+
+    /* Footer */
+    .footer {
+      background-color: var(--card-bg);
+      color: var(--white);
+      padding: 30px 5%;
+      text-align: center;
+      margin-top: 50px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .footer-link {
+      color: var(--text-light);
+      text-decoration: none;
+      transition: var(--transition);
+      font-size: 0.9rem;
+    }
+
+    .footer-link:hover {
+      color: var(--accent-color);
+    }
+
+    .copyright {
+      color: var(--text-light);
+      font-size: 0.8rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .dashboard-container {
+        padding: 90px 5% 40px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-container {
+        padding: 80px 5% 30px;
+      }
+      
+      .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+      }
+      
+      .quick-actions {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+      
+      .action-btn {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .navbar {
+        padding: 15px 20px;
+      }
+      
+      .profile-btn span {
+        display: none;
+      }
+      
+      .dashboard-title {
+        font-size: 1.6rem;
+      }
+      
+      .stat-card {
+        padding: 20px;
+      }
+      
+      .stat-value {
+        font-size: 1.8rem;
+      }
+      
+      th, td {
+        padding: 12px 8px;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="logo">
+      <span class="logo-icon">💰</span>
+      <span>Inspens</span>
+    </div>
+    <div class="nav-right">
+      <div class="profile-dropdown">
+        <button class="profile-btn">
+          <img src="https://tse1.mm.bing.net/th?id=OIP.962LUqJ0mS6poVTnmkBKXAHaHa&pid=Api" alt="Profile" class="profile-img">
+          <span>Misbah Ahmad</span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="dropdown-menu">
+          <a href="profile.html" class="dropdown-item">
+            <i class="fas fa-user"></i> My Profile
+          </a>
+          <div class="dropdown-divider"></div>
+          <a href="logout.html" class="dropdown-item logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Dashboard -->
+  <div class="dashboard-container">
+    <div class="dashboard-header">
+      <h1 class="dashboard-title">Dashboard</h1>
+      <div class="quick-actions">
+        <button class="action-btn primary-btn" onclick="window.location.href='add-income.html'">
+          <i class="fas fa-plus-circle"></i> Add Income
+        </button>
+        <button class="action-btn primary-btn" onclick="window.location.href='add-expense.html'">
+          <i class="fas fa-minus-circle"></i> Add Expense
+        </button>
+        <button class="action-btn secondary-btn" onclick="window.location.href='transactions.html'">
+          <i class="fas fa-list"></i> View All
+        </button>
+        <button class="action-btn secondary-btn" onclick="window.location.href='reports.html'">
+         <i class="fas fa-list"></i> Reports
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="stats-grid">
+      <div class="stat-card income-stat">
+        <div class="stat-title">
+          <i class="fas fa-arrow-up"></i> Total Income
+        </div>
+        <div class="stat-value" id="totalIncomeValue">PKR 0</div>
+      </div>
+      <div class="stat-card expense-stat">
+        <div class="stat-title">
+          <i class="fas fa-arrow-down"></i> Total Expenses
+        </div>
+        <div class="stat-value" id="totalExpenseValue">PKR 0</div>
+      </div>
+      <div class="stat-card balance-stat">
+        <div class="stat-title">
+          <i class="fas fa-wallet"></i> Current Balance
+        </div>
+        <div class="stat-value" id="currentBalanceValue">PKR 0</div>
+      </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <h2 class="section-title">Recent Transactions</h2>
+    <div class="transactions-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th>Type</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody id="recentTransactionsBody">
+          <!-- Dynamic rows will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-links">
+      <a href="about.html" class="footer-link">About</a>
+      <a href="privacy.html" class="footer-link">Privacy Policy</a>
+      <a href="terms.html" class="footer-link">Terms of Service</a>
+      <a href="help.html" class="footer-link">Contact Us</a>
+    </div>
+    <p class="copyright">© 2023 Inspens. All rights reserved.</p>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Navbar scroll effect
+      window.addEventListener('scroll', function() {
+        const navbar = document.querySelector('.navbar');
+        if (window.scrollY > 50) {
+          navbar.classList.add('scrolled');
+        } else {
+          navbar.classList.remove('scrolled');
+        }
+      });
+      
+      updateTotalIncome();
+      updateTotalExpenses();
+      updateCurrentBalance();
+      renderRecentTransactions();
+    });
+    
+    // Function to update total income on dashboard
+    function updateTotalIncome() {
+      const incomes = JSON.parse(localStorage.getItem('incomes')) || [];
+      const totalIncome = incomes.reduce((acc, income) => acc + income.amount, 0);
+      document.getElementById('totalIncomeValue').textContent = ` PKR ${totalIncome.toLocaleString()}`;
+    }
+
+    // Function to update total expenses on dashboard
+    function updateTotalExpenses() {
+      const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+      const totalExpenses = expenses.reduce((acc, expense) => acc + expense.amount, 0);
+      document.getElementById('totalExpenseValue').textContent = `PKR ${totalExpenses.toLocaleString()}`;
+    }
+    
+    // Function to update current balance (income - expenses)
+    function updateCurrentBalance() {
+      const incomes = JSON.parse(localStorage.getItem('incomes')) || [];
+      const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+      const totalIncome = incomes.reduce((acc, income) => acc + income.amount, 0);
+      const totalExpenses = expenses.reduce((acc, expense) => acc + expense.amount, 0);
+      const balance = totalIncome - totalExpenses;
+      document.getElementById('currentBalanceValue').textContent = ` PKR ${balance.toLocaleString()}`;
+    }
+
+    // Function to render recent transactions table (most recent first)
+    function renderRecentTransactions() {
+      const incomes = JSON.parse(localStorage.getItem('incomes')) || [];
+      const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+      const transactions = [];
+
+      // Combine incomes and expenses into one array with type and date objects
+      incomes.forEach(income => {
+        transactions.push({...income, type: 'Income', category: income.source || 'Income'});
+      });
+      expenses.forEach(expense => {
+        transactions.push({...expense, type: 'Expense'});
+      });
+
+      // Sort transactions by date descending
+      transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      const tbody = document.getElementById('recentTransactionsBody');
+      tbody.innerHTML = '';
+
+      // Only show the latest 5 transactions
+      transactions.slice(0, 5).forEach(txn => {
+        const tr = document.createElement('tr');
+
+        // Format date nicely
+        const dateObj = new Date(txn.date);
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        const formattedDate = dateObj.toLocaleDateString(undefined, options);
+
+        tr.innerHTML = `
+          <td>${formattedDate}</td>
+          <td>${txn.notes ? txn.notes : (txn.type === 'Income' ? 'Income received' : 'Expense')}</td>
+          <td>${txn.category.charAt(0).toUpperCase() + txn.category.slice(1)}</td>
+          <td><span class="transaction-type ${txn.type.toLowerCase()}-type">${txn.type}</span></td>
+          <td>PKR ${txn.amount.toLocaleString()}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+  </script>
+</body>
+</html>

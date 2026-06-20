@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inspens - Transaction History</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-color: #2a52be;
+      --primary-dark: #1a3a8f;
+      --primary-light: #7b9de1;
+      --accent-color: #ffc107;
+      --text-dark: #0a0a0a;
+      --text-medium: #4a4a4a;
+      --text-light: #e0e0e0;
+      --background: #121212;
+      --card-bg: #1e1e1e;
+      --white: #ffffff;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3);
+      --shadow-lg: 0 10px 20px rgba(0,0,0,0.5), 0 6px 6px rgba(0,0,0,0.4);
+      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      --success-color: #4caf50;
+      --danger-color: #f44336;
+      --income-color: #4caf50;
+      --expense-color: #f44336;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--background);
+      color: var(--text-light);
+      line-height: 1.6;
+      background: linear-gradient(135deg, #0a0a1a 0%, #12122b 100%);
+    }
+
+    /* Navbar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--card-bg);
+      padding: 15px 5%;
+      box-shadow: var(--shadow-sm);
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+      transition: var(--transition);
+    }
+
+    .navbar.scrolled {
+      padding: 10px 5%;
+      box-shadow: var(--shadow-md);
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      text-shadow: 0 0 10px rgba(42, 82, 190, 0.7);
+    }
+
+    .logo span {
+      display: inline-block;
+      transition: var(--transition);
+    }
+
+    .logo:hover span {
+      transform: translateY(-3px);
+      text-shadow: 0 0 15px rgba(42, 82, 190, 1);
+    }
+
+    .logo-icon {
+      margin-right: 8px;
+      font-size: 26px;
+      color: var(--accent-color);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .profile-dropdown {
+      position: relative;
+    }
+
+    .profile-btn {
+      background: none;
+      border: none;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .profile-btn:hover {
+      color: var(--accent-color);
+    }
+
+    .profile-img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--primary-light);
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      right: 0;
+      top: 50px;
+      background-color: var(--card-bg);
+      border-radius: 5px;
+      box-shadow: var(--shadow-md);
+      width: 200px;
+      overflow: hidden;
+      transform: translateY(10px);
+      opacity: 0;
+      visibility: hidden;
+      transition: var(--transition);
+      z-index: 1000;
+    }
+
+    .profile-dropdown:hover .dropdown-menu {
+      transform: translateY(0);
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .dropdown-item {
+      padding: 12px 15px;
+      color: var(--text-light);
+      text-decoration: none;
+      display: block;
+      transition: var(--transition);
+    }
+
+    .dropdown-item:hover {
+      background-color: rgba(42, 82, 190, 0.2);
+      color: var(--accent-color);
+    }
+
+    .dropdown-divider {
+      height: 1px;
+      background-color: rgba(255, 255, 255, 0.1);
+      margin: 5px 0;
+    }
+
+    .logout-btn {
+      color: var(--danger-color) !important;
+    }
+
+    /* Main Content */
+    .history-container {
+      padding: 100px 5% 50px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      color: var(--white);
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .page-title::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: var(--accent-color);
+      border-radius: 2px;
+    }
+
+    .back-btn {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--white);
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      margin-top: 10px;
+    }
+
+    .back-btn:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    /* Filters */
+    .filters {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .filter-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+
+    .filter-control {
+      width: 100%;
+      padding: 10px 15px;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
+      color: var(--white);
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .select-control {
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e0e0e0'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 15px center;
+      background-size: 15px;
+    }
+
+    /* Transactions Table */
+    .transactions-table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .transactions-table thead {
+      background-color: rgba(42, 82, 190, 0.3);
+    }
+
+    .transactions-table th {
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--accent-color);
+      white-space: nowrap;
+    }
+
+    .transactions-table td {
+      padding: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      white-space: nowrap;
+    }
+
+    .transactions-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .transactions-table tr:hover {
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .transaction-type {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .type-income {
+      background-color: rgba(76, 175, 80, 0.2);
+      color: var(--income-color);
+    }
+
+    .type-expense {
+      background-color: rgba(244, 67, 54, 0.2);
+      color: var(--expense-color);
+    }
+
+    .transaction-amount {
+      font-weight: 600;
+    }
+
+    .amount-income {
+      color: var(--income-color);
+    }
+
+    .amount-expense {
+      color: var(--expense-color);
+    }
+
+    .balance-positive {
+      color: var(--income-color);
+    }
+
+    .balance-negative {
+      color: var(--expense-color);
+    }
+
+    .transaction-notes {
+      color: var(--text-light);
+      opacity: 0.8;
+      font-size: 0.9rem;
+    }
+
+    .transaction-date {
+      color: var(--text-light);
+      opacity: 0.8;
+      font-size: 0.9rem;
+    }
+
+    .no-transactions {
+      text-align: center;
+      padding: 50px;
+      color: var(--text-light);
+      opacity: 0.7;
+      user-select: none;
+    }
+
+    /* Summary Cards */
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .summary-card {
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      user-select: none;
+    }
+
+    .summary-card h3 {
+      font-size: 1rem;
+      color: var(--text-light);
+      opacity: 0.8;
+      margin-bottom: 15px;
+    }
+
+    .summary-card .amount {
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+
+    .income-summary .amount {
+      color: var(--income-color);
+    }
+
+    .expense-summary .amount {
+      color: var(--expense-color);
+    }
+
+    .balance-summary .amount {
+      color: var(--accent-color);
+    }
+
+    /* Footer */
+    .footer {
+      background-color: var(--card-bg);
+      color: var(--white);
+      padding: 30px 5%;
+      text-align: center;
+      margin-top: 50px;
+      user-select: none;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .footer-link {
+      color: var(--text-light);
+      text-decoration: none;
+      transition: var(--transition);
+      font-size: 0.9rem;
+    }
+
+    .footer-link:hover {
+      color: var(--accent-color);
+    }
+
+    .copyright {
+      color: var(--text-light);
+      font-size: 0.8rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .history-container {
+        padding: 90px 5% 40px;
+      }
+      
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+      }
+      
+      .transactions-table {
+        display: block;
+        overflow-x: auto;
+      }
+      
+      .summary-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .navbar {
+        padding: 15px 20px;
+      }
+      
+      .profile-btn span {
+        display: none;
+      }
+      
+      .page-title {
+        font-size: 1.8rem;
+      }
+      
+      .transactions-table th,
+      .transactions-table td {
+        padding: 10px;
+        font-size: 0.9rem;
+      }
+
+      .back-btn {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="logo" aria-label="Inspens Logo">
+      <span class="logo-icon" aria-hidden="true">💰</span>
+      <span>Inspens</span>
+    </div>
+    <div class="nav-right">
+      <div class="profile-dropdown">
+        <button class="profile-btn" aria-haspopup="true" aria-expanded="false" aria-label="User profile menu">
+          <img src="https://tse1.mm.bing.net/th?id=OIP.962LUqJ0mS6poVTnmkBKXAHaHa&pid=Api" alt="Profile" class="profile-img">
+          <span>Misbah Ahmad</span>
+          <i class="fas fa-chevron-down" aria-hidden="true"></i>
+        </button>
+        <div class="dropdown-menu" role="menu" aria-label="Profile dropdown menu">
+          <a href="profile.html" class="dropdown-item" role="menuitem">
+            <i class="fas fa-user"></i> My Profile
+          </a>
+          <div class="dropdown-divider"></div>
+          <a href="logout.html" class="dropdown-item logout-btn" role="menuitem">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="history-container" role="main">
+    <div class="page-header">
+      <h1 class="page-title">Transaction History</h1>
+      <button class="back-btn" onclick="window.location.href='dashboard.html'" aria-label="Back to Dashboard">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Dashboard
+      </button>
+    </div>
+
+    <!-- Summary Cards -->
+    <section class="summary-cards" aria-live="polite" aria-atomic="true" aria-label="Summary of financial transactions">
+      <article class="summary-card income-summary" aria-label="Total Income">
+        <h3>Total Income</h3>
+        <div class="amount" id="totalIncomeValue">PKR 0.00</div>
+      </article>
+      <article class="summary-card expense-summary" aria-label="Total Expenses">
+        <h3>Total Expenses</h3>
+        <div class="amount" id="totalExpenseValue">PKR 0.00</div>
+      </article>
+      <article class="summary-card balance-summary" aria-label="Current Balance">
+        <h3>Current Balance</h3>
+        <div class="amount" id="currentBalanceValue">PKR 0.00</div>
+      </article>
+    </section>
+
+    <!-- Filters -->
+    <section class="filters" role="region" aria-labelledby="filterHeading">
+      <h2 id="filterHeading" class="sr-only">Filter Transactions</h2>
+      <div class="filter-group">
+        <label for="typeFilter">Transaction Type</label>
+        <select id="typeFilter" class="filter-control select-control" aria-controls="transactionsTable" aria-label="Filter by transaction type">
+          <option value="all">All Transactions</option>
+          <option value="income">Income</option>
+          <option value="expense">Expenses</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="dateFrom">From Date</label>
+        <input type="date" id="dateFrom" class="filter-control" aria-controls="transactionsTable" aria-label="Filter from date" />
+      </div>
+      <div class="filter-group">
+        <label for="dateTo">To Date</label>
+        <input type="date" id="dateTo" class="filter-control" aria-controls="transactionsTable" aria-label="Filter to date" />
+      </div>
+      <div class="filter-group">
+        <label for="categoryFilter">Category</label>
+        <select id="categoryFilter" class="filter-control select-control" aria-controls="transactionsTable" aria-label="Filter by category">
+          <option value="all">All Categories</option>
+          <option value="salary">Salary</option>
+          <option value="freelance">Freelance</option>
+          <option value="food">Food & Dining</option>
+          <option value="transportation">Transportation</option>
+          <option value="housing">Housing</option>
+          <option value="others">Others</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Transactions Table -->
+    <table class="transactions-table" aria-describedby="transactionsDescription" role="table" id="transactionsTable">
+      <caption id="transactionsDescription" class="sr-only">
+        Your financial transactions with date, description, category, type, amount, and balance.
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Description</th>
+          <th scope="col">Category</th>
+          <th scope="col">Type</th>
+          <th scope="col">Amount</th>
+          <th scope="col">Balance</th>
+        </tr>
+      </thead>
+      <tbody id="transactionsBody">
+        <!-- Transactions dynamically inserted here -->
+      </tbody>
+    </table>
+
+    <div id="noTransactions" class="no-transactions" style="display:none" role="alert" aria-live="polite">
+      <i class="fas fa-wallet" aria-hidden="true" style="font-size: 2rem; margin-bottom: 15px; opacity: 0.5;"></i>
+      <p>No transactions found</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="footer-links">
+      <a href="about.html" class="footer-link">About</a>
+      <a href="privacy.html" class="footer-link">Privacy Policy</a>
+      <a href="terms.html" class="footer-link">Terms of Service</a>
+      <a href="help.html" class="footer-link">Contact Us</a>
+    </div>
+    <p class="copyright">© 2023 Inspens. All rights reserved.</p>
+  </footer>
+
+  <script>
+    (() => {
+      // Format number as Indian Rupee currency string with 2 decimals
+      const formatCurrency = (amount) => {
+        // Using Intl.NumberFormat for currency formatting
+        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'PKR' }).format(amount);
+      };
+
+      // Retrieve incomes and expenses from localStorage (arrays)
+      const getIncomes = () => JSON.parse(localStorage.getItem('incomes')) || [];
+      const getExpenses = () => JSON.parse(localStorage.getItem('expenses')) || [];
+
+      // Merge incomes and expenses into transaction objects with necessary fields
+      const getAllTransactions = () => {
+        const incomes = getIncomes().map(i => ({
+          ...i,
+          type: 'income',
+          category: i.source || 'others',
+          description: i.notes || 'Income',
+          date: i.date || new Date().toISOString().split('T')[0]
+        }));
+        const expenses = getExpenses().map(e => ({
+          ...e,
+          type: 'expense',
+          category: e.category || 'others',
+          description: e.notes || 'Expense',
+          date: e.date || new Date().toISOString().split('T')[0]
+        }));
+        // Merge and sort descending by date
+        return incomes.concat(expenses).sort((a,b) => new Date(b.date) - new Date(a.date));
+      };
+
+      // Render transactions table body with running balance and filtering
+      const renderTransactions = () => {
+        const tbody = document.getElementById('transactionsBody');
+        const noTransactions = document.getElementById('noTransactions');
+
+        // Get filter values
+        const typeFilter = document.getElementById('typeFilter').value;
+        const categoryFilter = document.getElementById('categoryFilter').value;
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+
+        // Load all transactions
+        let transactions = getAllTransactions();
+
+        // Filter by type
+        if(typeFilter !== 'all') transactions = transactions.filter(t => t.type === typeFilter);
+
+        // Filter by category
+        if(categoryFilter !== 'all') transactions = transactions.filter(t => t.category === categoryFilter);
+
+        // Filter by date range
+        if(dateFrom) transactions = transactions.filter(t => t.date >= dateFrom);
+        if(dateTo) transactions = transactions.filter(t => t.date <= dateTo);
+
+        if(transactions.length === 0) {
+          tbody.innerHTML = '';
+          noTransactions.style.display = 'block';
+          updateSummary(0,0);
+          return;
+        } else {
+          noTransactions.style.display = 'none';
+        }
+
+        // Calculate running balance per the filtered transactions sorted oldest to newest for balance
+        let balance = 0;
+        // For running balance, sort ascending by date
+        let transactionsOrdered = [...transactions].sort((a,b) => new Date(a.date) - new Date(b.date));
+        // Map to get balances per transaction by date ascending
+        const balancesMap = new Map();
+        transactionsOrdered.forEach(t => {
+          if(t.type === 'income') balance += Number(t.amount);
+          else if(t.type === 'expense') balance -= Number(t.amount);
+          balancesMap.set(t, balance);
+        });
+        // Render rows descending by date (transactions already sorted descending)
+        tbody.innerHTML = '';
+        transactions.forEach(t => {
+          // Find balance for this transaction (key equality by reference won't work so find by date,desc,type,amount)
+          // To prevent mismatch, scan transactionsOrdered to find index of matching txn
+          let b = 0;
+          for(let tr of transactionsOrdered) {
+            if(tr.date === t.date && tr.amount === t.amount && tr.type === t.type && tr.description === t.description) {
+              b = balancesMap.get(tr);
+              break;
+            }
+          }
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="transaction-date">${t.date}</td>
+            <td>${t.description}</td>
+            <td>${t.category.charAt(0).toUpperCase() + t.category.slice(1)}</td>
+            <td><span class="transaction-type type-${t.type}">${t.type}</span></td>
+            <td class="transaction-amount amount-${t.type}">${formatCurrency(Number(t.amount))}</td>
+            <td class="${b >= 0 ? 'balance-positive' : 'balance-negative'}">${formatCurrency(b)}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        // Calculate summary totals based on filtered transactions
+        const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc,t) => acc + Number(t.amount),0);
+        const totalExpense = transactions.filter(t => t.type === 'expense').reduce((acc,t) => acc + Number(t.amount),0);
+        updateSummary(totalIncome,totalExpense);
+      };
+
+      // Update summary cards values
+      const updateSummary = (income, expense) => {
+        document.getElementById('totalIncomeValue').textContent = formatCurrency(income);
+        document.getElementById('totalExpenseValue').textContent = formatCurrency(expense);
+        document.getElementById('currentBalanceValue').textContent = formatCurrency(income - expense);
+      };
+
+      // Setup filter event listeners to rerender on change
+      const setupFilters = () => {
+        ['typeFilter','categoryFilter','dateFrom','dateTo'].forEach(id => {
+          const elem = document.getElementById(id);
+          elem.addEventListener('change', renderTransactions);
+        });
+      };
+
+      // Listen for localStorage changes in other tabs/windows and rerender live
+      window.addEventListener('storage', (event) => {
+        if(event.key === 'incomes' || event.key === 'expenses') {
+          renderTransactions();
+        }
+      });
+
+      // Navbar scroll effect
+      window.addEventListener('scroll', () => {
+        const navbar = document.querySelector('.navbar');
+        if(window.scrollY > 50) {
+          navbar.classList.add('scrolled');
+        } else {
+          navbar.classList.remove('scrolled');
+        }
+      });
+
+      // Initialize page content on DOM ready
+      document.addEventListener('DOMContentLoaded', () => {
+        setupFilters();
+        renderTransactions();
+      });
+    })();
+
+  </script>
+</body>
+</html>
+

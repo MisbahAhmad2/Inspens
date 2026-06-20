@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inspens - Reports</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary-color: #2a52be;
+      --primary-dark: #1a3a8f;
+      --primary-light: #7b9de1;
+      --accent-color: #ffc107;
+      --text-dark: #0a0a0a;
+      --text-medium: #4a4a4a;
+      --text-light: #e0e0e0;
+      --background: #121212;
+      --card-bg: #1e1e1e;
+      --white: #ffffff;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.6);
+      --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.8);
+      --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.85);
+      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      --income-color: #4caf50;
+      --expense-color: #f44336;
+      --font-family: 'Montserrat', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-family);
+      background: linear-gradient(135deg, #0a0a1a 0%, #12122b 100%);
+      color: var(--text-light);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Navbar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--card-bg);
+      padding: 20px 5%;
+      box-shadow: var(--shadow-sm);
+      position: fixed;
+      width: 100%;
+      top: 0;
+      left: 0;
+      z-index: 10000;
+      transition: var(--transition);
+      backdrop-filter: saturate(180%) blur(10px);
+    }
+    .navbar.scrolled {
+      padding: 10px 5%;
+      box-shadow: var(--shadow-md);
+    }
+
+    .logo {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      letter-spacing: 1.5px;
+      user-select: none;
+      text-shadow: 0 0 12px rgba(42, 82, 190, 0.85);
+    }
+    .logo span {
+      margin-left: 8px;
+      transition: var(--transition);
+    }
+    .logo:hover span {
+      color: var(--accent-color);
+      text-shadow: 0 0 20px var(--accent-color);
+      transform: translateY(-4px);
+    }
+    .logo-icon {
+      font-size: 34px;
+      color: var(--accent-color);
+      filter: drop-shadow(0 0 4px var(--accent-color));
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+    }
+    .profile-dropdown {
+      position: relative;
+    }
+
+    .profile-btn {
+      background: none;
+      border: none;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 6px 8px;
+      border-radius: 8px;
+      transition: color 0.25s ease;
+    }
+    .profile-btn:hover {
+      color: var(--accent-color);
+    }
+
+    .profile-img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2.5px solid var(--primary-light);
+      object-fit: cover;
+      box-shadow: 0 0 5px var(--primary-light);
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      right: 0;
+      top: 52px;
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      box-shadow: var(--shadow-md);
+      width: 220px;
+      overflow: hidden;
+      transform: translateY(15px);
+      opacity: 0;
+      visibility: hidden;
+      transition: var(--transition);
+      z-index: 15000;
+    }
+    .profile-dropdown:hover .dropdown-menu {
+      transform: translateY(0);
+      opacity: 1;
+      visibility: visible;
+    }
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      color: var(--text-light);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      user-select: none;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .dropdown-item i {
+      font-size: 16px;
+      width: 18px;
+      color: var(--primary-light);
+      transition: color 0.25s ease;
+    }
+    .dropdown-item:hover, .dropdown-item:focus {
+      background-color: rgba(42, 82, 190, 0.25);
+      color: var(--accent-color);
+    }
+    .dropdown-item:hover i, .dropdown-item:focus i {
+      color: var(--accent-color);
+    }
+    .dropdown-divider {
+      height: 1px;
+      background-color: rgba(255, 255, 255, 0.1);
+      margin: 8px 0;
+    }
+    .logout-btn {
+      color: var(--expense-color) !important;
+      font-weight: 600;
+    }
+    .logout-btn:hover {
+      background-color: rgba(244, 67, 54, 0.3);
+    }
+
+    /* Main Content */
+    .reports-container {
+      padding: 130px 60px 60px;
+      max-width: 1400px;
+      margin: 0 auto;
+      flex-grow: 1;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+      row-gap: 10px;
+    }
+
+    .page-title {
+      font-size: 2.8rem;
+      color: var(--white);
+      font-weight: 800;
+      position: relative;
+      letter-spacing: 1.3px;
+    }
+
+    .page-title::after {
+      content: '';
+      position: absolute;
+      bottom: -12px;
+      left: 0;
+      width: 80px;
+      height: 4px;
+      background: var(--accent-color);
+      border-radius: 3px;
+      filter: drop-shadow(0 0 7px var(--accent-color));
+    }
+
+    /* Summary Cards Container */
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px 40px;
+      margin-bottom: 50px;
+    }
+
+    .insight-card {
+      background: var(--card-bg);
+      border-radius: 18px;
+      padding: 28px 30px;
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: saturate(180%) blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      user-select: none;
+      transition: box-shadow 0.3s ease;
+    }
+    .insight-card:hover {
+      box-shadow: 0 12px 40px rgba(255 255 255 / 0.25);
+    }
+
+    .insight-label {
+      color: var(--text-light);
+      opacity: 0.85;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      margin-bottom: 8px;
+      user-select: text;
+    }
+
+    .insight-value {
+      font-size: 2.6rem;
+      font-weight: 900;
+      color: var(--white);
+      user-select: text;
+    }
+
+    .insight-positive {
+      color: var(--income-color);
+      text-shadow: 0 0 8px var(--income-color);
+    }
+
+    .insight-negative {
+      color: var(--expense-color);
+      text-shadow: 0 0 8px var(--expense-color);
+    }
+
+    /* Report Cards Grid */
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 40px 35px;
+      margin-bottom: 50px;
+    }
+
+    .report-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 28px 32px;
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: saturate(180%) blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: box-shadow 0.3s ease;
+    }
+    .report-card:hover {
+      box-shadow: 0 14px 50px rgba(255 255 255 / 0.25);
+    }
+
+    .report-header {
+      margin-bottom: 22px;
+    }
+
+    .report-title {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: 0.02em;
+      user-select: text;
+      position: relative;
+      white-space: nowrap;
+    }
+
+    .report-title::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      width: 50px;
+      height: 4px;
+      background: var(--accent-color);
+      border-radius: 4px;
+      filter: drop-shadow(0 0 8px var(--accent-color));
+    }
+
+    /* Chart container styling */
+    .chart-container {
+      position: relative;
+      height: 360px;
+      width: 100%;
+    }
+
+    /* Footer */
+    .footer {
+      background-color: var(--card-bg);
+      color: var(--white);
+      padding: 33px 5%;
+      text-align: center;
+      margin-top: 50px;
+      user-select: none;
+      box-shadow: var(--shadow-md);
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .footer-link {
+      color: var(--text-light);
+      text-decoration: none;
+      transition: var(--transition);
+      font-size: 0.95rem;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+    }
+
+    .footer-link:hover {
+      color: var(--accent-color);
+      text-shadow: 0 0 10px var(--accent-color);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .reports-container {
+        padding: 90px 6% 40px;
+      }
+      .chart-container {
+        height: 320px;
+      }
+      .insight-value {
+        font-size: 2.4rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 18px;
+      }
+      .report-grid {
+        grid-template-columns: 1fr;
+        gap: 40px 0;
+      }
+      .insights-grid {
+        grid-template-columns: 1fr;
+        gap: 30px 0;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .navbar {
+        padding: 15px 20px;
+      }
+      .page-title {
+        font-size: 1.8rem;
+      }
+      .insight-value {
+        font-size: 2rem;
+      }
+      .chart-container {
+        height: 260px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="logo" aria-label="Inspens Logo">
+      <span class="logo-icon" aria-hidden="true">💰</span>
+      <span>Inspens</span>
+    </div>
+    <div class="nav-right">
+      <div class="profile-dropdown">
+        <button class="profile-btn" aria-haspopup="true" aria-expanded="false" aria-label="User profile menu">
+          <img src="https://tse1.mm.bing.net/th?id=OIP.962LUqJ0mS6poVTnmkBKXAHaHa&pid=Api" alt="Profile" class="profile-img" />
+          <span>Misbah Ahmad</span>
+          <i class="fas fa-chevron-down" aria-hidden="true"></i>
+        </button>
+        <div class="dropdown-menu" role="menu" aria-label="Profile dropdown menu">
+          <a href="profile.html" class="dropdown-item" role="menuitem">
+            <i class="fas fa-user"></i> My Profile
+          </a>
+          <div class="dropdown-divider"></div>
+          <a href="logout.html" class="dropdown-item logout-btn" role="menuitem">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="reports-container" role="main" aria-label="Financial Reports">
+    <header class="page-header">
+      <h1 class="page-title">Financial Reports</h1>
+    </header>
+
+    <!-- Summary Cards -->
+    <section class="insights-grid" aria-label="Financial summaries">
+      <article class="insight-card" aria-label="Total Income">
+        <div class="insight-label">Total Income</div>
+        <div id="totalIncomeValue" class="insight-value insight-positive">PKR 0.00</div>
+      </article>
+      <article class="insight-card" aria-label="Total Expenses">
+        <div class="insight-label">Total Expenses</div>
+        <div id="totalExpenseValue" class="insight-value insight-negative">PKR 0.00</div>
+      </article>
+      <article class="insight-card" aria-label="Current Balance">
+        <div class="insight-label">Current Balance</div>
+        <div id="currentBalanceValue" class="insight-value">PKR 0.00</div>
+      </article>
+    </section>
+
+    <!-- Charts Section -->
+    <section class="report-grid" aria-label="Financial charts">
+      <article class="report-card" aria-label="Monthly Income versus Expenses chart">
+        <div class="report-header">
+          <h2 class="report-title">Monthly Income vs Expenses</h2>
+        </div>
+        <div class="chart-container">
+          <canvas id="monthlyChart" role="img" aria-label="Monthly income versus expenses chart"></canvas>
+        </div>
+      </article>
+
+      <article class="report-card" aria-label="Income categories chart">
+        <div class="report-header">
+          <h2 class="report-title">Income Categories</h2>
+        </div>
+        <div class="chart-container">
+          <canvas id="incomeCategoriesChart" role="img" aria-label="Income categories pie chart"></canvas>
+        </div>
+      </article>
+
+      <article class="report-card" aria-label="Expense categories chart">
+        <div class="report-header">
+          <h2 class="report-title">Expense Categories</h2>
+        </div>
+        <div class="chart-container">
+          <canvas id="expenseCategoriesChart" role="img" aria-label="Expense categories pie chart"></canvas>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="footer-links">
+      <a href="about.html" class="footer-link">About</a>
+      <a href="privacy.html" class="footer-link">Privacy Policy</a>
+      <a href="terms.html" class="footer-link">Terms of Service</a>
+      <a href="help.html" class="footer-link">Contact Us</a>
+    </div>
+    <p class="copyright">© 2023 Inspens. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Format number as Indian Rupee currency
+    const formatCurrency = (amount) => {
+      return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'PKR' }).format(amount);
+    };
+
+    // Retrieve incomes and expenses from localStorage
+    const getIncomes = () => JSON.parse(localStorage.getItem('incomes')) || [];
+    const getExpenses = () => JSON.parse(localStorage.getItem('expenses')) || [];
+
+    // Group data by month (YYYY-MM) and category for chart data
+    const groupByMonth = (transactions) => {
+      const map = {};
+      transactions.forEach(({ amount, date }) => {
+        const month = date ? date.slice(0, 7) : 'unknown';
+        map[month] = (map[month] || 0) + Number(amount);
+      });
+      return map;
+    };
+
+    const groupByCategory = (transactions) => {
+      const map = {};
+      transactions.forEach(({ amount, category }) => {
+        const key = category || 'Others';
+        map[key] = (map[key] || 0) + Number(amount);
+      });
+      return map;
+    };
+
+    // Prepare monthly data for chart labels and datasets
+    const prepareMonthlyDatasets = (incomeMap, expenseMap) => {
+      const allMonths = new Set([...Object.keys(incomeMap), ...Object.keys(expenseMap)]);
+      const sortedMonths = Array.from(allMonths).sort();
+      const incomeData = sortedMonths.map(m => incomeMap[m] || 0);
+      const expenseData = sortedMonths.map(m => expenseMap[m] || 0);
+      // Format labels as 'MMM YYYY'
+      const labels = sortedMonths.map(m => {
+        const [year, month] = m.split('-');
+        const date = new Date(year, month - 1);
+        return date.toLocaleString('en-IN', { month: 'short', year: 'numeric' });
+      });
+      return { labels, incomeData, expenseData };
+    };
+
+    // Initialize charts
+    let monthlyChart, incomeCategoriesChart, expenseCategoriesChart;
+
+    const initCharts = () => {
+      const incomes = getIncomes();
+      const expenses = getExpenses();
+
+      // Group by month
+      const incomeMonthlyMap = groupByMonth(incomes);
+      const expenseMonthlyMap = groupByMonth(expenses);
+
+      // Prepare monthly datasets
+      const { labels, incomeData, expenseData } = prepareMonthlyDatasets(incomeMonthlyMap, expenseMonthlyMap);
+
+      // Group by category
+      const incomeCategoryMap = groupByCategory(incomes);
+      const expenseCategoryMap = groupByCategory(expenses);
+
+      // Income Categories Data
+      const incomeCategoryLabels = Object.keys(incomeCategoryMap);
+      const incomeCategoryValues = incomeCategoryLabels.map(cat => incomeCategoryMap[cat]);
+      const incomeCategoryColors = incomeCategoryLabels.map((_, i) =>
+        `hsl(${120 + i * 50}, 70%, 60%)`
+      );
+
+      // Expense Categories Data
+      const expenseCategoryLabels = Object.keys(expenseCategoryMap);
+      const expenseCategoryValues = expenseCategoryLabels.map(cat => expenseCategoryMap[cat]);
+      const expenseCategoryColors = expenseCategoryLabels.map((_, i) =>
+        `hsl(${0 + i * 40}, 70%, 60%)`
+      );
+
+      // Create or update Monthly Income vs Expenses chart
+      const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+      if (monthlyChart) monthlyChart.destroy();
+      monthlyChart = new Chart(monthlyCtx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Income',
+              data: incomeData,
+              backgroundColor: 'rgba(76, 175, 80, 0.7)',
+              borderColor: 'rgba(76, 175, 80, 1)',
+              borderWidth: 1,
+              borderRadius: 6,
+              maxBarThickness: 40,
+            },
+            {
+              label: 'Expenses',
+              data: expenseData,
+              backgroundColor: 'rgba(244, 67, 54, 0.7)',
+              borderColor: 'rgba(244, 67, 54, 1)',
+              borderWidth: 1,
+              borderRadius: 6,
+              maxBarThickness: 40,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            duration: 900,
+            easing: 'easeOutQuart',
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)',
+                borderDash: [6, 4],
+              },
+              ticks: {
+                color: 'rgba(255, 255, 255, 0.75)',
+                font: {size: 13, weight: '600'},
+                callback: value => formatCurrency(value)
+              }
+            },
+            x: {
+              grid: {
+                color: 'rgba(255, 255, 255, 0.05)',
+              },
+              ticks: {
+                color: 'rgba(255, 255, 255, 0.85)',
+                font: {size: 14, weight: '600'},
+                maxRotation: 0,
+                autoSkipPadding: 20,
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { color: 'rgba(255,255,255,0.8)', font: {weight: '700', size: 14} },
+              position: 'top',
+              padding: 24,
+            },
+            tooltip: {
+              backgroundColor: 'rgba(30, 30, 30, 0.95)',
+              titleFont: {weight: 'bold', size: 14},
+              bodyFont: {size: 13},
+              borderColor: 'rgba(255,255,255,0.12)',
+              borderWidth: 1,
+              cornerRadius: 8,
+              padding: 12,
+              callbacks: {
+                label: ctx => `${ctx.dataset.label}: ${formatCurrency(ctx.parsed.y)}`
+              }
+            }
+          }
+        }
+      });
+
+      // Income Categories doughnut chart
+      const incomeCatCtx = document.getElementById('incomeCategoriesChart').getContext('2d');
+      if (incomeCategoriesChart) incomeCategoriesChart.destroy();
+      incomeCategoriesChart = new Chart(incomeCatCtx, {
+        type: 'doughnut',
+        data: {
+          labels: incomeCategoryLabels,
+          datasets: [{
+            data: incomeCategoryValues,
+            backgroundColor: incomeCategoryColors,
+            borderWidth: 2,
+            borderColor: 'rgba(30, 30, 30, 0.8)',
+            hoverOffset: 30,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '70%',
+          animation: {
+            animateRotate: true,
+            duration: 900,
+            easing: 'easeOutQuart',
+          },
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: 'rgba(255,255,255,0.9)', font: {size: 14, weight: '600'} },
+              padding: 24,
+            },
+            tooltip: {
+              backgroundColor: 'rgba(30,30,30,0.95)',
+              bodyFont: {size: 14},
+              borderColor: 'rgba(255,255,255,0.15)',
+              borderWidth: 1,
+              cornerRadius: 8,
+              padding: 12,
+              callbacks: {
+                label: ctx => `${ctx.label}: ${formatCurrency(ctx.parsed)}`
+              }
+            }
+          }
+        }
+      });
+
+      // Expense Categories doughnut chart
+      const expenseCatCtx = document.getElementById('expenseCategoriesChart').getContext('2d');
+      if (expenseCategoriesChart) expenseCategoriesChart.destroy();
+      expenseCategoriesChart = new Chart(expenseCatCtx, {
+        type: 'doughnut',
+        data: {
+          labels: expenseCategoryLabels,
+          datasets: [{
+            data: expenseCategoryValues,
+            backgroundColor: expenseCategoryColors,
+            borderWidth: 2,
+            borderColor: 'rgba(30, 30, 30, 0.8)',
+            hoverOffset: 30,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '70%',
+          animation: {
+            animateRotate: true,
+            duration: 900,
+            easing: 'easeOutQuart',
+          },
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: 'rgba(255,255,255,0.9)', font: {size: 14, weight: '600'} },
+              padding: 24,
+            },
+            tooltip: {
+              backgroundColor: 'rgba(30,30,30,0.95)',
+              bodyFont: {size: 14},
+              borderColor: 'rgba(255,255,255,0.15)',
+              borderWidth: 1,
+              cornerRadius: 8,
+              padding: 12,
+              callbacks: {
+                label: ctx => `${ctx.label}: ${formatCurrency(ctx.parsed)}`
+              }
+            }
+          }
+        }
+      });
+    };
+
+    // Update summaries and charts
+    const updateReports = () => {
+      const incomes = getIncomes();
+      const expenses = getExpenses();
+
+      const totalIncome = incomes.reduce((acc, i) => acc + Number(i.amount), 0);
+      const totalExpense = expenses.reduce((acc, e) => acc + Number(e.amount), 0);
+      const currentBalance = totalIncome - totalExpense;
+
+      document.getElementById('totalIncomeValue').textContent = formatCurrency(totalIncome);
+      document.getElementById('totalExpenseValue').textContent = formatCurrency(totalExpense);
+      document.getElementById('currentBalanceValue').textContent = formatCurrency(currentBalance);
+
+      initCharts();
+    };
+
+    // Navbar scroll effect
+    window.addEventListener('scroll', () => {
+      const navbar = document.querySelector('.navbar');
+      if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateReports();
+
+      // Listen to localStorage changes for dynamic update if multiple tabs/windows
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'incomes' || e.key === 'expenses') {
+          updateReports();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
